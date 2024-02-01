@@ -3,19 +3,6 @@ on:
   push:
     branches:
       - main
-    inputs:
-      image_tag:
-        description: Tag to images
-        type: string
-        default: "test"
-      docker_build_dir:
-        description: Docker build directory (default = '.')
-        default: "."
-        type: string
-      path_to_dockerfile:
-        description: Path to the dockerfile (default = 'Dockerfile')
-        default: "./Dockerfile"
-        type: string
   workflow_dispatch:
 
 permissions:
@@ -43,9 +30,9 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ secrets.ECR_REPO }}
-          IMAGE_TAG: ${{ inputs.image_tag }}
+          IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build . -f ./Dockerfile -t "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          docker build . -t "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
           docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
           echo "IMAGE $IMAGE_TAG is pushed to $ECR_REGISTRY/$ECR_REPOSITORY"
           echo "image_tag=$IMAGE_TAG" 
