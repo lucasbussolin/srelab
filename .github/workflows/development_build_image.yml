@@ -1,0 +1,16 @@
+name: Build development image
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  name: Build and Release Docker Image
+  steps: 
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        bar: foo
+        foo: bar
+      run: echo $bar $foo
+          
