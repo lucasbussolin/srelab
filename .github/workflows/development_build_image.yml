@@ -41,3 +41,35 @@ jobs:
           echo "IMAGE $IMAGE_TAG is pushed to $ECR_REPOSITORY"
           echo "image_tag=$IMAGE_TAG" 
           echo "full_image=$ECR_REPOSITORY:$IMAGE_TAG"
+
+  deploy_service:
+    name: Deploy Service
+    needs: build_release_image
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          registry-type: public
+
+      - name: Mount task-definition file
+        working-directory: .aws/dev
+        env:
+          ECR_REPOSITORY: ${{ secrets.ECR_REPO }}
+          AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: envsubst < template.json > task-definition.json
+
+      - name: Render Amazon ECS task definition
+        id: render-metabase-container
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: .aws/dev/task-definition.json
+          container-name: metabase
+          image: ${{ secrets.ECR_REPO }}:${{ github.sha }}
+          environment-variables: "LOG_LEVEL=info"
