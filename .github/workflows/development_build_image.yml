@@ -79,3 +79,10 @@ jobs:
           container-name: metabase
           image: ${{ secrets.ECR_REPO }}:${{ github.sha }}
           environment-variables: "LOG_LEVEL=info"
+
+      - name: Deploy to Amazon ECS service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.render-metabase-container.outputs.task-definition }}
+          service: metabase-1
+          cluster: devtest
