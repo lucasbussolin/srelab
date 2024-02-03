@@ -35,9 +35,6 @@ jobs:
         env:
           ECR_REPOSITORY: ${{ secrets.ECR_REPO }}
           IMAGE_TAG: ${{ github.sha }}
-          RDS_METABASE_USER: ${{ secrets.RDS_METABASE_USER }}
-          RDS_METABASE_PASSWORD: ${{ secrets.RDS_METABASE_PASSWORD }}
-          RDS_METABASE_HOST: ${{ secrets.RDS_METABASE_HOST }}
         run: |
           docker build . -t "$ECR_REPOSITORY:$IMAGE_TAG"
           docker push "$ECR_REPOSITORY:$IMAGE_TAG"
@@ -72,6 +69,9 @@ jobs:
           ECR_REPOSITORY: ${{ secrets.ECR_REPO }}
           AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT }}
           IMAGE_TAG: ${{ github.sha }}
+          RDS_METABASE_USER: ${{ secrets.RDS_METABASE_USER }}
+          RDS_METABASE_PASSWORD: ${{ secrets.RDS_METABASE_PASSWORD }}
+          RDS_METABASE_HOST: ${{ secrets.RDS_METABASE_HOST }}
         run: envsubst < template.json > task-definition.json
 
       - name: Render Amazon ECS task definition
