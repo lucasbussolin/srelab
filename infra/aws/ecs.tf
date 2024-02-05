@@ -50,3 +50,9 @@ resource "aws_ecs_service" "metabase-1" {
 
   scheduling_strategy = "REPLICA"
 }
+
+resource "aws_cloudwatch_log_group" "tfer---002F-ecs-002F-metabase" {
+  log_group_class = "STANDARD"
+  name            = "/ecs/metabase"
+  skip_destroy    = "false"
+}

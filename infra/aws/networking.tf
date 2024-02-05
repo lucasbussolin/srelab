@@ -7,6 +7,10 @@ resource "aws_vpc" "srelab" {
   instance_tenancy                     = "default"
 }
 
+resource "aws_internet_gateway" "tfer--igw-6c13f117" {
+  vpc_id = aws_vpc.srelab.id
+}
+
 resource "aws_lb" "metabase" {
 
   desync_mitigation_mode                      = "defensive"
@@ -260,4 +264,96 @@ resource "aws_launch_template" "config" {
   name                   = "ECSLaunchTemplate_m2OWTOW6Xjv0"
   user_data              = "IyEvYmluL2Jhc2ggCmVjaG8gRUNTX0NMVVNURVI9ZGV2dGVzdCA+PiAvZXRjL2Vjcy9lY3MuY29uZmlnOw=="
   vpc_security_group_ids = ["sg-f8888bbd"]
+}
+
+resource "aws_default_network_acl" "tfer--acl-1e45a363" {
+  default_network_acl_id = aws_vpc.srelab.default_network_acl_id
+  egress {
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = "0"
+    icmp_code  = "0"
+    icmp_type  = "0"
+    protocol   = "-1"
+    rule_no    = "100"
+    to_port    = "0"
+  }
+
+  ingress {
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = "0"
+    icmp_code  = "0"
+    icmp_type  = "0"
+    protocol   = "-1"
+    rule_no    = "100"
+    to_port    = "0"
+  }
+
+  subnet_ids = [aws_subnet.subnet-f, aws_subnet.subnet-e, aws_subnet.subnet-a, aws_subnet.subnet-b, aws_subnet.subnet-c, aws_subnet.subnet-d]
+}
+
+resource "aws_docdb_subnet_group" "tfer--default-vpc-2d1ba457" {
+  description = "Created from the RDS Management Console"
+  name        = "default-vpc-2d1ba457"
+  subnet_ids  = ["subnet-3020043f", "subnet-3871c706", "subnet-5813713f", "subnet-5d7f1673", "subnet-a92210e3", "subnet-f1610ead"]
+}
+
+resource "aws_db_instance" "tfer--database-1" {
+  allocated_storage                     = "20"
+  auto_minor_version_upgrade            = "true"
+  availability_zone                     = "us-east-1f"
+  backup_retention_period               = "1"
+  backup_target                         = "region"
+  backup_window                         = "06:54-07:24"
+  ca_cert_identifier                    = "rds-ca-rsa2048-g1"
+  copy_tags_to_snapshot                 = "true"
+  customer_owned_ip_enabled             = "false"
+  db_subnet_group_name                  = aws_db_subnet_group.group.name
+  deletion_protection                   = "false"
+  engine                                = "postgres"
+  engine_version                        = "15.5"
+  iam_database_authentication_enabled   = "false"
+  identifier                            = "database-1"
+  instance_class                        = "db.t3.micro"
+  iops                                  = "0"
+  kms_key_id                            = "arn:aws:kms:us-east-1:237533616493:key/ebbdd81e-940f-4f35-91b2-6f8133b0871e"
+  license_model                         = "postgresql-license"
+  maintenance_window                    = "fri:08:23-fri:08:53"
+  max_allocated_storage                 = "1000"
+  monitoring_interval                   = "0"
+  multi_az                              = "false"
+  network_type                          = "IPV4"
+  option_group_name                     = "default:postgres-15"
+  parameter_group_name                  = "default.postgres15"
+  performance_insights_enabled          = "true"
+  performance_insights_kms_key_id       = "arn:aws:kms:us-east-1:237533616493:key/ebbdd81e-940f-4f35-91b2-6f8133b0871e"
+  performance_insights_retention_period = "7"
+  port                                  = "5432"
+  publicly_accessible                   = "true"
+  storage_encrypted                     = "true"
+  storage_throughput                    = "0"
+  storage_type                          = "gp2"
+  username                              = "postgres"
+  vpc_security_group_ids                = [aws_security_group.default.id]
+}
+
+resource "aws_db_subnet_group" "group" {
+  description = "Created from the RDS Management Console"
+  name        = "default-vpc-2d1ba457"
+  subnet_ids  = [aws_subnet.subnet-f, aws_subnet.subnet-e, aws_subnet.subnet-a, aws_subnet.subnet-b, aws_subnet.subnet-c, aws_subnet.subnet-d]
+}
+
+resource "aws_main_route_table_association" "tfer--vpc-2d1ba457" {
+  route_table_id = aws_route_table.route_table.id
+  vpc_id         = aws_vpc.srelab.id
+}
+
+resource "aws_route_table" "route_table" {
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.tfer--igw-6c13f117.id
+  }
+
+  vpc_id = aws_vpc.srelab.id
 }
